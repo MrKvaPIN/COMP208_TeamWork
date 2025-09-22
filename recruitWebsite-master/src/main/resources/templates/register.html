@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title>Register</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        /* 添加背景图片 */
+        body {
+            background: url('/image/2.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        /* 调整白色框的透明度为60% */
+        .frame {
+            background-color: rgba(244, 244, 244, 0.6);
+            margin-top: 80px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: darkgrey 5px 5px 20px 5px;
+        }
+        .layui-elip {
+            font-size: 24px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md4 layui-col-md-offset4 frame">
+            <header class="layui-elip">Register</header>
+            <form class="layui-form layui-form-pane layui-row layui-col-space30">
+                <div class="layui-col-md12">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Username</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="username" class="layui-input" placeholder="Please enter your account number" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Password</label>
+                        <div class="layui-input-block">
+                            <input type="password" id="password" class="layui-input" placeholder="Please enter your password" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Confirm</label>
+                        <div class="layui-input-block">
+                            <input type="password" id="confPassword" class="layui-input" placeholder="Please enter your password again" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Identity</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="role" value="0fe33840c6d84bf78df55d49b1134245" title="Applicants" checked>
+                            <input type="radio" name="role" value="0fe33840c6d84bf78df55d49b1611234" title="HR">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12" style="display: flex; align-items: center; justify-content: center;">
+                    <button type="button" class="layui-btn" id="registerBtn" value="confirm">Confirm</button>
+                    <button type="reset" class="layui-btn layui-btn-normal" value="Reset">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    layui.use('util', function(){
+        var util = layui.util;
+        // 固定块
+        util.fixbar({
+            bar1: '&#xe65c;',
+            css: { right: 50, bottom: 100 },
+            bgcolor: '#393D49',
+            click: function(type){
+                if(type === 'bar1'){
+                    location.href='/index';
+                }
+            }
+        });
+    });
+
+    $(function (){
+        $("#account").focus();
+
+        $(window).keydown(function (event){
+            if(event.keyCode === 13){
+                register();
+            }
+        });
+
+        $("#registerBtn").click(function (){
+            register();
+        });
+    });
+
+    function register(){
+        var username = $.trim($("#username").val());
+        var password = $.trim($("#password").val());
+        var confPassword = $.trim($("#confPassword").val());
+        var role = $("input[name='role']:checked").val();
+
+        if(username === '' || password === ''){
+            layer.msg("Please enter your username and password");
+            return false;
+        }
+        if(password !== confPassword){
+            layer.msg("The two passwords do not match");
+            return false;
+        }
+
+        $.ajax({
+            url: '/register',
+            type: 'post',
+            dataType: 'json',
+            data: {
+                "username": username,
+                "password": password,
+                "role": role
+            },
+            success: function (data){
+                console.log(data.msg);
+                if(data.success){
+                    layer.alert('Registration successful, log in now!', {
+                        time: 3*1000,
+                        success: function(layero, index){
+                            var timeNum = this.time / 1000, setText = function(start){
+                                layer.title('Close in seconds ' + (start ? timeNum : --timeNum), index);
+                            };
+                            setText(true);
+                            this.timer = setInterval(setText, 1000);
+                            if(timeNum <= 0) clearInterval(this.timer);
+                        },
+                        end: function(){
+                            clearInterval(this.timer);
+                            location.href='/login';
+                        }
+                    });
+                } else {
+                    layer.msg("Registration failed," + data.msg);
+                }
+            },
+            error: function (data){
+                layer.msg("Registration failed," + data.responseJSON.msg);
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{::script},~{::style})">
+    <title>AI Chat Assistant</title>
+    <!-- 引入 Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
+    <!-- 可选：引入额外的科技感字体 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron:400,500,700&display=swap">
+    <style type="text/css">
+        /* 全局设置 */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1F1C2C, #928DAB);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            overflow-x: hidden;
+        }
+        /* 聊天容器 */
+        .chat-container {
+            position: relative;
+            max-width: 800px;
+            margin: 80px 155px 80px auto; /* 修改这里：上 右 下 左 */
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            animation: fadeIn 0.8s ease;
+        }
+        /* 左右侧图片 */
+        .side-image {
+            position: fixed;
+            width: calc(50% - 400px); /* 根据聊天容器宽度自动计算 */
+            height: 100vh;
+            object-fit: cover;
+            opacity: 0.8;
+            z-index: 1;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 10px rgba(95, 184, 120, 0.5));
+        }
+        .side-image:hover {
+            opacity: 1;
+        }
+        .side-image.left {
+            left: 0;
+            top: 0;
+            transform: none;
+        }
+        .side-image.right {
+            right: 0;
+            top: 0;
+            transform: none;
+        }
+        .side-image {
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .side-image.right {
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        /* 聊天消息区 */
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        /* 消息条目 */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        /* 消息气泡 */
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            background: #f0f2f5;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+        }
+        /* 用户消息样式 */
+        .message.user .message-content {
+            background: #5FB878;
+            color: #fff;
+        }
+        /* Markdown 样式 */
+        .message-content pre {
+            background: #2e2e2e;
+            color: #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .message-content code {
+            background: #3a3a3a;
+            color: #fff;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .message-content blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 10px;
+            color: #666;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .message-content th, .message-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .message-content th {
+            background-color: #f2f2f2;
+        }
+        /* 输入区域 */
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        .input-area textarea {
+            flex-grow: 1;
+            height: 60px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: none;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #5FB878;
+            box-shadow: 0 0 5px rgba(95, 184, 120, 0.5);
+        }
+        /* 按钮样式 */
+        .layui-btn {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #5FB878 !important;
+            border-color: #5FB878 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .layui-btn:hover {
+            background-color: #4da66e !important;
+            border-color: #4da66e !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        }
+        /* 卡片动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 响应式设计 */
+        @media (max-width: 1000px) {
+            .side-image {
+                width: 20%; /* 在小屏幕上缩小图片宽度 */
+            }
+        }
+        @media (max-width: 600px) {
+            .chat-container {
+                margin: 40px 10px;
+                width: calc(100% - 20px);
+            }
+            .chat-messages {
+                height: 300px;
+            }
+            .side-image {
+                display: none;
+            }
+        }
+        @media (max-width: 1000px) {
+            .chat-container {
+                margin: 80px 60px 80px auto; /* 中等屏幕调整 */
+            }
+        }
+        @media (max-width: 600px) {
+            .chat-container {
+                margin: 40px 10px; /* 小屏幕恢复默认 */
+            }
+        }
+    </style>
+    <!-- 引入 Markdown 解析库 marked -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        layui.use(['layer', 'form'], function(){
+            var layer = layui.layer;
+            var form = layui.form;
+            var $ = layui.jquery;
+
+            // 发送消息到 AI 服务
+            function sendMessage(message, resume) {
+                $.ajax({
+                    url: '/process2',  // 直接访问 Flask 服务
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        question: message,
+                        resume: resume || "default resume"
+                    }),
+                    success: function(response) {
+                        appendMessage(response, false);
+                    },
+                    error: function(xhr, status, error) {
+                        layer.msg('发送失败，请重试');
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            // 检查 URL 参数，判断是否为职位推荐模式
+            function getUrlParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return decodeURIComponent(r[2]);
+                return null;
+            }
+
+            function fetchResumeText(callback) {
+                console.log("请求后端获取简历...");
+                $.ajax({
+                    url: '/resume/getParsedResume',  // 后端自己获取
+                    type: 'GET',
+                    success: function(response) {
+                        console.log("后端返回数据:", response);
+                        if (response.status === "success" && response.resume_text) {
+                            callback(response.resume_text);
+                        } else {
+                            layer.msg('未找到解析简历，请先上传');
+                            callback("default resume");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("获取简历失败:", xhr, status, error);
+                        layer.msg('获取简历失败，请检查登录状态');
+                        callback("default resume");
+                    }
+                });
+            }
+
+            // 如果是职位推荐模式，自动发送职位推荐请求
+            if (getUrlParam('mode') === 'job_recommendation') {
+                fetchResumeText(function(resumeText) {
+                    sendMessage("Based on my resume, could you please suggest some suitable job positions for me?", resumeText);
+                });
+            }
+
+            // 发送消息（点击按钮）
+            $('#sendBtn').on('click', function() {
+                var message = $('#messageInput').val();
+                if (!message) {
+                    layer.msg('请输入消息');
+                    return;
+                }
+                appendMessage(message, true);  // 先显示用户消息
+                fetchResumeText(function(resumeText) {
+                    sendMessage(message, resumeText);
+                });
+                $('#messageInput').val('');  // 清空输入框
+            });
+
+            // 添加消息到聊天窗口
+            function appendMessage(content, isUser) {
+                if (isUser) {
+                    var messageHtml = '<div class="message user">'
+                        + '<div class="message-content">' + content + '</div>'
+                        + '</div>';
+                    $('.chat-messages').append(messageHtml);
+                } else {
+                    var messageDiv = $('<div class="message"><div class="message-content"></div></div>');
+                    $('.chat-messages').append(messageDiv);
+
+                    // 解析 Markdown 内容
+                    var processedContent = marked.parse(content);
+                    var tempDiv = $('<div>').html(processedContent);
+                    var fullText = tempDiv.text();
+
+                    // 逐字显示动画效果
+                    var i = 0;
+                    var baseSpeed = 30;
+                    var minSpeed = 10;
+                    var maxSpeed = 50;
+                    var speedFactor = Math.max(minSpeed, Math.min(maxSpeed, baseSpeed - Math.floor(fullText.length / 100)));
+
+                    var interval = setInterval(function() {
+                        if (i < fullText.length) {
+                            messageDiv.find('.message-content').text(fullText.substring(0, i+1));
+                            i++;
+                        } else {
+                            clearInterval(interval);
+                            messageDiv.find('.message-content').html(processedContent);
+                        }
+                        $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight);
+                    }, speedFactor);
+                }
+                $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight);
+            }
+
+            // 监听 Enter 键发送消息（不含 Shift）
+            $('#messageInput').keypress(function(e) {
+                if(e.which == 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    $('#sendBtn').click();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+
+<div class="layui-layout layui-layout-admin">
+    <div th:replace="front-common::header('ai')"></div>
+    <!-- 添加左右两侧图片 -->
+    <img src="/image/chatbot1.png" class="side-image left" alt="AI Assistant">
+    <!-- <img src="/image/chatbot1.png" class="side-image right" alt="AI Assistant"> -->
+    
+    <div class="layui-container chat-container">
+        <div class="chat-messages"></div>
+        <div class="input-area">
+            <textarea id="messageInput" class="layui-textarea" placeholder="please enter your message..."></textarea>
+            <button id="sendBtn" class="layui-btn layui-btn-normal">submit</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

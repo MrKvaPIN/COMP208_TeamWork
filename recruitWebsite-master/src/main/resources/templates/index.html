@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title>IT Recruitment</title>
+    <style type="text/css">
+        * {
+            padding: 0px;
+            margin: 0px;
+        }
+        /* 定义主题变量 */
+        :root {
+            /* 背景和文字 */
+            --background-light: #f5f5f5;
+            --background-dark: #1e1e1e;
+            --text-light: #000000;
+            --text-dark: #ffffff;
+
+            /* 边框、按钮、卡片等 */
+            --card-bg-light: #fdfaff;      /* 卡片背景(浅色模式) */
+            --card-bg-dark: #2b4a69;       /* 卡片背景(深色模式) */
+            --card-border-light: #d4a5a5;  /* 卡片边框(浅色模式) */
+            --card-border-dark: #4f82a2;   /* 卡片边框(深色模式) */
+
+            /* 薪资文字 */
+            --salary-light: #ff6400;
+            --salary-dark: #ffff00;
+
+            /* 悬停及阴影 */
+            --card-shadow: rgba(0,0,0,0.15);
+            --card-shadow-hover: rgba(0,0,0,0.25);
+        }
+        /* 默认使用浅色模式 */
+        body {
+            background-color: var(--background-light);
+            color: var(--text-light);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        /* 深色模式 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--background-dark);
+                color: var(--text-dark);
+            }
+        }
+        /* 保持轮播图图片样式不变 */
+        .layui-carousel img {
+            width: 100%; /* 让图片填充整个容器 */
+            height: 100%; /* 确保高度自适应 */
+            object-fit: cover; /* 让图片填充但不变形 */
+        }
+        /* ---------------------------- 职位卡片部分 ---------------------------- */
+        /* 职位卡片容器，使用 flex 布局 */
+        .job-list-container {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        /* 单个职位卡片 */
+        .job-card {
+            width: 280px;
+            border-radius: 8px;
+            background-color: var(--card-bg-light);
+            border: 2px solid var(--card-border-light);
+            padding: 16px 20px;
+            box-shadow: 0 4px 8px var(--card-shadow);
+            cursor: pointer;
+            transition:
+                background-color 0.3s ease,
+                box-shadow 0.3s ease,
+                transform 0.2s ease;
+        }
+        .job-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px var(--card-shadow-hover);
+        }
+        /* 深色模式下的卡片自定义(可选) */
+        @media (prefers-color-scheme: dark) {
+            .job-card {
+                background-color: var(--card-bg-dark);
+                border: 2px solid var(--card-border-dark);
+            }
+        }
+        /* 标题、地点、薪资、其他信息的分行样式 */
+        .job-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #008080;
+            margin-bottom: 8px;
+        }
+        .job-location {
+            color: #444;
+            margin-bottom: 6px;
+        }
+        .salary-text {
+            color: var(--salary-light);
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .job-info {
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .job-date {
+            color: #999;
+            font-size: 13px;
+        }
+        /* 暗色模式下薪资颜色 */
+        @media (prefers-color-scheme: dark) {
+            .salary-text {
+                color: var(--salary-dark);
+            }
+        }
+        /* ---------------------------- 职位卡片结束 ---------------------------- */
+    </style>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin" >
+
+    <div th:replace="front-common::header('index')"></div>
+
+    <div class="layui-layout-body" style="margin-top: 20px;">
+        <!-- 内容主体区域 -->
+        <div class="layui-bg-gray" style="padding-top: 60px; padding-right: 145px; padding-bottom: 145px; padding-left: 145px;">
+            <div class="layui-container" style="display:flex;flex-direction: column;align-items: center">
+                <!-- 轮播图 -->
+                <div class="layui-carousel" id="test10">
+                    <div carousel-item="">
+                        <div><img th:src="@{/upload/ad/1.png}"></div>
+                        <div><img th:src="@{/upload/ad/2.png}"></div>
+                        <div><img th:src="@{/upload/ad/3.png}"></div>
+                        <div><img th:src="@{/upload/ad/4.png}"></div>
+                        <div><img th:src="@{/upload/ad/5.png}"></div>
+                    </div>
+                </div>
+
+                <!-- 招聘信息职位卡片列表 -->
+                <div class="job-list-container">
+                    <!-- 示例职位卡片 -->
+                    <div class="job-card" onclick="window.location.href='/job/detail/1'">
+                        <div class="job-title">Product Manager</div>
+                        <div class="job-location">Hampshire - Southampton</div>
+                        <div class="salary-text">50K-72K</div>
+                        <div class="job-info">Product - Product Manager</div>
+                        <div class="job-date">Posted on: 2025-01-21</div>
+                    </div>
+
+                    <div class="job-card" onclick="window.location.href='/job/detail/2'">
+                        <div class="job-title">Java Intern Developer</div>
+                        <div class="job-location">Antrim / Down - Belfast</div>
+                        <div class="salary-text">12K-18K</div>
+                        <div class="job-info">Technology - Backend</div>
+                        <div class="job-date">Posted on: 2025-01-22</div>
+                    </div>
+
+                    <div class="job-card" onclick="window.location.href='/job/detail/3'">
+                        <div class="job-title">Algorithm Engineer</div>
+                        <div class="job-location">Greater Manchester - Manchester</div>
+                        <div class="salary-text">50K-72K</div>
+                        <div class="job-info">Technology - Algorithm</div>
+                        <div class="job-date">Posted on: 2025-01-23</div>
+                    </div>
+                </div>
+                <!-- /招聘信息职位卡片列表 -->
+
+            </div>
+        </div>
+
+        <div th:replace="front-common::footer"></div>
+    </div>
+
+</div>
+<button id="theme-toggle">🌞 Settle color</button>
+<script>
+    layui.use(['carousel', 'form'], function() {
+        var carousel = layui.carousel,
+            form = layui.form;
+        // 图片轮播
+        carousel.render({
+            elem: '#test10',
+            width: '840px',
+            height: '420px',
+            interval: 5000
+        });
+    })
+    // 主题切换按钮
+    const toggleButton = document.getElementById("theme-toggle");
+
+    toggleButton.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        if (document.body.classList.contains("dark-mode")) {
+            document.body.style.backgroundColor = "var(--background-dark)";
+            document.body.style.color = "var(--text-dark)";
+        } else {
+            document.body.style.backgroundColor = "var(--background-light)";
+            document.body.style.color = "var(--text-light)";
+        }
+    });
+</script>
+</body>
+</html>

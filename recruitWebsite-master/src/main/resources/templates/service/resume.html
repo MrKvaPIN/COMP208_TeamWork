@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title>Resume</title>
+    <style type="text/css">
+        .container{
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            border: #f8f8f8 30px solid;
+            padding: 0;
+        }
+        .content{
+            background-color: #ffffff;
+            min-height: 75vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+
+    <div th:replace="front-common::header('')"></div>
+
+    <div class="layui-layout-body" style="margin-top: 50px;background-color: #f8f8f8;">
+        <div class="layui-container container">
+            <div class="content">
+                <div class="layui-fluid" >
+                    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+                        <legend>Resume</legend>
+                    </fieldset>
+                    <form class="layui-form layui-form-pane" id="resumeForm" lay-filter="resumeForm" style="padding: 0 60px 0 60px;">
+                        <div class="layui-form-item" style="display: flex;flex-direction: column;align-items: center;justify-content: flex-start;">
+                            <img th:src="@{/pic/photo/{photo}(photo=${resumeInfo==null?'default.png':resumeInfo.photo})}"
+                                 id="showImg" class="layui-nav-img" style="width: 120px;height: 120px;margin-right: 0;margin-bottom: 5px;">
+                            <button class="layui-btn" type='button' value='' onclick='javascript:$("#img").click();'>Upload photos</button>
+                            <input id="showImgName" type='text' readonly style="border: none;"/>
+                            <input name="imgFile" id="img" placeholder="Modify photos" type="file"
+                                   accept="image/jpeg, image/png" maxFileCount=1 style="display:none"/>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-body">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Position</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="job" lay-verify="required" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+
+                                    <label class="layui-form-label">Salary</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="salary" lay-verify="required" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header">Basic Information</div>
+                            <div class="layui-card-body">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Name</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="name" lay-verify="required" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                    <label class="layui-form-label">Gender</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <select name="sex" lay-search lay-verify="required">
+                                            <option value="" disabled selected> Please select </option> <!-- 默认显示的英文选项 -->
+                                            <option th:each="sex,stat:${application.sexList}"
+                                                    th:text="${sex.value}"
+                                                    th:value="${sex.value}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Birthday</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="birth" lay-verify="required" id="birth" type="text" autocomplete="off" class="layui-input">
+                                    </div>
+                                    <label class="layui-form-label">Age</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="age" lay-verify="required|number" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Mail</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="email" lay-verify="required|email" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                    <label class="layui-form-label">Cell phone</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="phone" lay-verify="required|phone" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label"style="width: 120px;">Marital status</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <select name="marriage" lay-search lay-verify="required">
+                                            <option value="" disabled selected> Please select </option> <!-- 默认显示的英文选项 -->
+                                            <option th:each="marriage,stat:${application.marriageList}"
+                                                    th:text="${marriage.value}"
+                                                    th:value="${marriage.value}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header">Personal experience</div>
+                            <div class="layui-card-body">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Graduate School</label>
+                                    <div class="layui-input-block">
+                                        <input name="college" lay-verify="required" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">major</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <input name="major" lay-verify="required" type="text" autocomplete="off" class="layui-input" >
+                                    </div>
+                                    <label class="layui-form-label">Education</label>
+                                    <div class="layui-input-inline" style="width: 20vw;">
+                                        <select name="education" lay-search lay-verify="required">
+                                            <option value="" disabled selected> Please select </option> <!-- 默认显示的英文选项 -->
+                                            <option th:each="education,stat:${application.educationList}"
+                                                    th:text="${education.value}"
+                                                    th:value="${education.value}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label">Work Experience</label>
+                                    <div class="layui-input-block">
+                                        <textarea name="experience" lay-verify="required" placeholder="Please enter content" autocomplete="off" class="layui-textarea" ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card">
+                            <div class="layui-card-header">Personal Introduction</div>
+                            <div class="layui-card-body">
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label">Skills</label>
+                                    <div class="layui-input-block">
+                                        <textarea name="technology" lay-verify="required" placeholder="Please enter content" autocomplete="off" class="layui-textarea" ></textarea>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label">Self-evaluation</label>
+                                    <div class="layui-input-block">
+                                        <textarea name="introduction" lay-verify="required" placeholder="Please enter content" autocomplete="off" class="layui-textarea" ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" lay-filter="submit" lay-submit class="layui-btn">Save resume (please click before generating)</button>
+                                <a id="resumeHtml" target="_blank" th:href="@{/resume/detail}" class="layui-btn layui-btn-normal">Generate Resume</a>
+                                <button type="button" id="copy" class="layui-btn layui-btn-normal">Copy Resume Link</button>
+                                <button type="button" id="resetBtn" lay-submit class="layui-btn layui-btn-primary">Reset</button>
+                            </div> 
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Upload PDF</label>
+                            <div class="layui-input-block">
+                                <!-- 隐藏的文件选择框 -->
+                                <input type="file" id="pdfUpload" style="display:none;" accept=".pdf">
+                                <!-- 触发文件选择的按钮 -->
+                                <button type="button" class="layui-btn" id="uploadPdfBtn">
+                                    <i class="layui-icon">&#xe67c;</i> Select PDF File
+                                </button>
+                                <!-- 查看已上传文件的按钮 -->
+                                <button type="button" class="layui-btn layui-btn-normal" id="viewPdfBtn">
+                                    <i class="layui-icon">&#xe705;</i> View Uploaded PDF
+                                </button>
+                                <!-- 显示文件上传状态（文件名 / 成功消息 / 失败消息） -->
+                                <div id="uploadStatus" style="margin-left: 15px; color: #666; display: inline-block;"></div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Recommended Jobs</label>
+                            <div class="layui-input-block" style="display: flex; align-items: center;">
+                                <button type="button" class="layui-btn layui-btn-warm" id="recommendJobBtn">
+                                    <i class="layui-icon">&#xe609;</i> Recommended Jobs
+                                </button>
+                                <div id="jobRecommendation" style="margin-left: 15px; color: #333; display: none;"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="front-common::footer"></div>
+    </div>
+
+</div>
+<script th:inline="javascript">
+
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var $ = layui.jquery;
+
+        laydate.render({
+            elem: '#birth'
+            ,value: [[${resumeInfo==null?'':resumeInfo.birth}]]
+        });
+
+        form.val("resumeForm", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+            "name": [[${resumeInfo==null?'':resumeInfo.name}]]
+            ,"sex": [[${resumeInfo==null?'':resumeInfo.sex}]]
+            ,"birth": [[${resumeInfo==null?'':resumeInfo.birth}]]
+            ,"age": [[${resumeInfo==null?'':resumeInfo.age}]]
+            ,"phone": [[${resumeInfo==null?'':resumeInfo.phone}]]
+            ,"email": [[${resumeInfo==null?'':resumeInfo.email}]]
+            ,"marriage": [[${resumeInfo==null?'':resumeInfo.marriage}]]
+            ,"political": [[${resumeInfo==null?'':resumeInfo.political}]]
+            ,"salary": [[${resumeInfo==null?'':resumeInfo.salary}]]
+            ,"job": [[${resumeInfo==null?'':resumeInfo.job}]]
+            ,"college": [[${resumeInfo==null?'':resumeInfo.college}]]
+            ,"major": [[${resumeInfo==null?'':resumeInfo.major}]]
+            ,"education": [[${resumeInfo==null?'':resumeInfo.education}]]
+            ,"experience": [[${resumeInfo==null?'':resumeInfo.experience}]]
+            ,"technology": [[${resumeInfo==null?'':resumeInfo.technology}]]
+            ,"introduction": [[${resumeInfo==null?'':resumeInfo.introduction}]]
+        });
+
+        form.on('submit(submit)', function(data){
+            var formFile = new FormData(document.getElementById('resumeForm'));
+            $.ajax({
+                url: '/resume/saveOrUpdate',
+                type: 'post',
+                dataType: 'json',
+                data: formFile,
+                cache: false,
+                processData: false,
+                contentType:false,
+                success: function (data){
+                    if(data.success){
+                        layer.msg("Modification successful");
+                    }else {
+                        layer.msg("Edit failed, please try again later（"+data.msg+")");
+                    }
+                },
+                error: function (data){
+                    layer.msg("Modification failed,"+data.responseJSON.msg);
+                }
+            });
+            return false;
+        });
+
+        $("#resetBtn").click(function (){
+            form.val("resumeForm", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+                "name": [[${resumeInfo==null?'':resumeInfo.name}]]
+                ,"sex": [[${resumeInfo==null?'':resumeInfo.sex}]]
+                ,"birth": [[${resumeInfo==null?'':resumeInfo.birth}]]
+                ,"age": [[${resumeInfo==null?'':resumeInfo.age}]]
+                ,"phone": [[${resumeInfo==null?'':resumeInfo.phone}]]
+                ,"email": [[${resumeInfo==null?'':resumeInfo.email}]]
+                ,"marriage": [[${resumeInfo==null?'':resumeInfo.marriage}]]
+                // 删除政治面貌字段
+                ,"salary": [[${resumeInfo==null?'':resumeInfo.salary}]]
+                ,"job": [[${resumeInfo==null?'':resumeInfo.job}]]
+                ,"college": [[${resumeInfo==null?'':resumeInfo.college}]]
+                ,"major": [[${resumeInfo==null?'':resumeInfo.major}]]
+                ,"education": [[${resumeInfo==null?'':resumeInfo.education}]]
+                ,"experience": [[${resumeInfo==null?'':resumeInfo.experience}]]
+                ,"technology": [[${resumeInfo==null?'':resumeInfo.technology}]]
+                ,"introduction": [[${resumeInfo==null?'':resumeInfo.introduction}]]
+            });
+        })
+
+        $("#copy").click(function (){
+            var obj = document.getElementById("resumeHtml");
+            var input = document.createElement("input");
+            document.body.appendChild(input);
+            input.value = obj.href;
+            input.select();
+            try{
+                //进行复制到剪切板
+                if(document.execCommand("Copy",false,null)){
+                    //如果复制成功
+                    alert("Copy successful!");
+                }else{
+                    //如果复制失败
+                    alert("Copy failed!");
+                }
+            }catch(err){
+                //如果报错
+                alert("Copy error!")
+            }
+        })
+
+        $("#img").on('change', function(){
+            if(this.files.length){
+                let file = this.files[0];
+                let reader = new FileReader();
+                reader.onload = function(){
+                    $("#showImg").attr("src",this.result);
+                };
+                reader.readAsDataURL(file);
+                var dd = $(this).val().split("\\");
+                $("#showImgName").val(dd[dd.length - 1]);
+            }
+        });
+        //上传pdf简历-后端实现
+        $("#uploadPdfBtn").on('click', function () {
+            $("#pdfUpload").click();
+        });
+
+        //查看已上传的PDF文件
+        $("#viewPdfBtn").on('click', function () {
+            $.ajax({
+                url: "/user/getCurrentUserId",
+                type: "GET",
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function (userResponse) {
+                    if (userResponse.status === "success" && userResponse.userId) {
+                        let userId = userResponse.userId;
+                        // 获取最新的简历信息
+                        $.ajax({
+                            url: "/resume/getParsedResume",
+                            type: "GET",
+                            data: { userId: userId },
+                            success: function (resumeResponse) {
+                                if (resumeResponse.status === "success") {
+                                    // 使用文件路径打开PDF文件
+                                    window.open("/resume/viewPdf?userId=" + userId, '_blank');
+                                } else {
+                                    layer.msg("No uploaded resume found");
+                                }
+                            },
+                            error: function () {
+                                layer.msg("Failed to get resume information");
+                            }
+                        });
+                    } else {
+                        layer.msg("Please login first");
+                    }
+                },
+                error: function () {
+                    layer.msg("Failed to get user information");
+                }
+            });
+        });
+
+        $("#pdfUpload").on('change', function () {
+            let file = this.files[0];
+            if (!file) return;
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+            $("#uploadStatus").html("Uploading, please wait...");
+
+            $.ajax({
+                url: "/resume/upload",  // ✅ 这里是后端上传接口
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.status === "success") {
+                        $("#uploadStatus").html("<p style='color:green;'>Upload successful!</p>");
+                    } else {
+                        $("#uploadStatus").html("<p style='color:red;'>Upload failed:" + response.message + "</p>");
+                    }
+                },
+                error: function () {
+                    $("#uploadStatus").html("<p style='color:red;'>Upload failed, please try again</p>");
+                }
+            });
+        });
+
+        // 职位推荐按钮点击事件 - 跳转到AI聊天页面进行推荐
+        $("#recommendJobBtn").click(function () {
+            $("#jobRecommendation").html("Checking resume status, please wait...").css("color", "orange").show();
+
+            // **✅ 1. 获取真实用户 ID**
+            $.ajax({
+                url: "/user/getCurrentUserId", // 这里是新的 API，获取用户 ID
+                type: "GET",
+                xhrFields: {
+                    withCredentials: true  // ✅ 允许携带 Cookie
+                },
+                success: function (userResponse) {
+                    if (userResponse.status === "success" && userResponse.userId) {
+                        let userId = userResponse.userId;
+
+                        // **✅ 2. 先检查数据库中是否已有解析后的简历**
+                        $.ajax({
+                            url: "/resume/getParsedResume",
+                            type: "GET",
+                            data: { userId: userId },
+                            success: function (resumeResponse) {
+                                if (resumeResponse.status === "success" && resumeResponse.resume_text) {
+                                    // **✅ 3. 数据库有简历，保存到sessionStorage并跳转到AI聊天页面**
+                                    sessionStorage.setItem('resumeText', resumeResponse.resume_text);
+                                    layer.msg('Redirecting to AI chat page...');
+                                    setTimeout(function() {
+                                        window.location.href = "/personal/AI_chat?mode=job_recommendation";
+                                    }, 1000);
+                                } else {
+                                    // **❌ 没有简历，提示上传**
+                                    $("#jobRecommendation").html("No parsed resume found, please upload first!").css("color", "red");
+                                }
+                            },
+                            error: function () {
+                                $("#jobRecommendation").html("Request failed, please try again!").css("color", "red");
+                            }
+                        });
+
+                    } else {
+                        $("#jobRecommendation").html("Unable to obtain user information, please log in again!").css("color", "red");
+                    }
+                },
+                error: function () {
+                    $("#jobRecommendation").html("Failed to obtain user information, please check login status!").css("color", "red");
+                }
+            });
+        });
+
+// **✅ 4. 发送简历到 AI 端 - 此函数保留但不再直接使用，功能已迁移到AI_chat.html**
+        function sendToAI(resumeText) {
+            if (!resumeText || resumeText.trim() === "") {
+                $("#jobRecommendation").html("简历内容为空，无法推荐职位！").css("color", "red");
+                return;
+            }
+            
+            // 保存简历文本到sessionStorage
+            sessionStorage.setItem('resumeText', resumeText);
+            // 跳转到AI聊天页面，并设置模式为职位推荐
+            window.location.href = "/personal/AI_chat?mode=job_recommendation";
+        }
+
+    })
+
+
+    function onHiddenFile() {
+        var dd = $("#img").val().split("\\");
+        $("#showImgName").val(dd[dd.length - 1]);
+    }
+</script>
+</body>
+
+</html>

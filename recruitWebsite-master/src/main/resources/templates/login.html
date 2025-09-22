@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title>Log in</title>
+    <style type="text/css">
+        body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: url('/image/ChatGPT Image.png') no-repeat center center fixed;
+    background-size: cover;
+            }
+        
+        {
+            margin: 0;
+            padding: 0;
+        }
+        .frame {
+    background: rgba(255, 255, 255, 0.2); /* 轻微透明 */
+    backdrop-filter: blur(10px); /* 让背景模糊 */
+    -webkit-backdrop-filter: blur(10px); /* 兼容 WebKit 浏览器 */
+    margin-top: 80px;
+    padding: 20px;
+    border-radius: 10px;
+        }
+
+
+<!--        @keyframes bgColorAnimation {-->
+<!--    0% { background-color: rgb(255, 0, 0); }   /* 红色 */-->
+<!--    33% { background-color: rgb(0, 255, 0); }   /* 绿色 */-->
+<!--    66% { background-color: rgb(0, 0, 255); }   /* 蓝色 */-->
+<!--    100% { background-color: rgb(255, 0, 0); }  /* 回到红色 */-->
+<!--}-->
+
+<!--.frame {-->
+<!--    background-color: rgba(255, 255, 255, 0.2);-->
+<!--    animation: bgColorAnimation 0.5s infinite alternate; /* 5秒轮换 */-->
+<!--    border-radius: 10px;-->
+<!--    padding: 20px;-->
+<!--}-->
+
+
+        .layui-elip {
+            font-size: 24px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container">
+    <div class="layui-row">
+        <div class="layui-col-md4 layui-col-md-offset10 frame">
+            <header class="layui-elip">Log in</header>
+            <form class="layui-form layui-form-pane layui-row layui-col-space30">
+                <div class="layui-col-md12">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Account</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="username" class="layui-input" placeholder="Please enter your account number" autocomplete="off" >
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Password</label>
+                        <div class="layui-input-block">
+                            <input type="password" id="password" class="layui-input" placeholder="Please enter your password" autocomplete="off" >
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Ver Code</label>
+                        <div class="layui-input-inline" style="width: 110px;">
+                            <input type="text" id="securityCode" class="layui-input" placeholder="Enter code" autocomplete="off" >
+                        </div>
+                        <div class="layui-input-inline" style="width: 100px;">
+                            <img id="securityCodeImg" alt="Click Replace" title="Click Replace" th:src="@{/kaptcha/render}"/>
+                        </div>
+                    </div>
+                    <div class="layui-col-md12" style="display: flex;align-items: center;justify-content: center;">
+                        <button id="loginBtn" type="button" class="layui-btn" value="Log in">Log in</button>
+                        <button type="button" class="layui-btn layui-btn-normal" value="Register" onclick="location.href='/register'">Register</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    layui.use('util', function(){
+        var util = layui.util;
+        //固定块
+        util.fixbar({
+            bar1: '&#xe65c;'
+            ,css: {right: 50, bottom: 100}
+            ,bgcolor: '#393D49'
+            ,click: function(type){
+                if(type === 'bar1'){
+                    location.href='/index';
+                }
+            }
+        });
+    });
+
+    $(function (){
+        $("#username").focus();
+
+        $(window).keydown(function (event){
+            if(event.keyCode === 13){
+                login();
+            }
+        })
+
+        $("#loginBtn").click(function (){
+            login();
+        });
+
+        $("#securityCodeImg").bind("click", function () {
+            $(this).hide().attr('src', '/kaptcha/render?' + Math.random()).fadeIn();
+        });
+    });
+    function login(){
+        var username = $.trim($("#username").val());
+        var password = $.trim($("#password").val());
+        var code = $("#securityCode").val();
+
+        if(username==='' || password===''){
+            layer.msg("Please enter your username and password");
+            return false;
+        }
+
+        if(code===''){
+            layer.msg("Please enter the verification code");
+            return false;
+        }
+        $.ajax({
+            url: '/login',
+            type: 'post',
+            dataType: 'json',
+            data: {
+                "username": username,
+                "password": password,
+                "code": code
+            },
+            success: function (data){
+                if(data.success){
+                    location.href='index';
+                }else {
+                    $("#securityCodeImg").attr("src",'/kaptcha/render?' + Math.random());
+                    layer.msg("Login failed,"+data.msg);
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>

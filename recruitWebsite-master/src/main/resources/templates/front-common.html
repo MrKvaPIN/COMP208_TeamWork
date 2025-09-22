@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:fragment="commonCss(title,links,script,style)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="icon" th:href="@{/favicon.png?v=2}" type="image/png"/>
+    <title th:replace="${title}">Title</title>
+
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/layui/css/modules/layer/default/layer.css}">
+    <script th:src="@{/layui/layui.js}"></script>
+    <script th:src="@{/jquery-3.5.1.min.js}"></script>
+    <script th:src="@{/layer/layer.js}"></script>
+
+    <th:block th:replace="${script}"/>
+    <th:block th:replace="${links}"/>
+    <th:block th:replace="${style}"/>
+    <style>
+        .layui-badge-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #FF5722;
+        }
+    </style>
+</head>
+<body>
+
+<div th:fragment="header(thispage)" class="layui-header">
+    <ul class="layui-nav">
+        <li class="layui-nav-item">
+            <a onclick="location.href='/index'" style="font-weight: bold;color: #5FB878;font-size: x-large;">AIHire</a>
+        </li>
+        <li th:class="${thispage=='index'? 'layui-nav-item layui-this':'layui-nav-item'}">
+            <a th:href="@{/index}">Front page</a>
+        </li>
+        <li th:class="${thispage=='job'? 'layui-nav-item layui-this':'layui-nav-item'}">
+            <a th:href="@{/personal/job}">Position</a>
+        </li>
+        <li th:class="${thispage=='company'? 'layui-nav-item layui-this':'layui-nav-item'}">
+            <a th:href="@{/personal/company}">Company</a>
+        </li>
+        <!-- 添加 AI 聊天按钮 -->
+        <shiro:lacksRole name="hr">
+            <li th:class="${thispage=='ai'? 'layui-nav-item layui-this':'layui-nav-item'}">
+                <a th:href="@{/personal/AI_chat}">AI Chat</a>
+            </li>
+        </shiro:lacksRole>
+        <shiro:hasRole name="admin">
+            <li th:class="${thispage=='ai'? 'layui-nav-item layui-this':'layui-nav-item'}">
+                <a th:href="@{/personal/AI_chat}">AI Chat</a>
+            </li>
+        </shiro:hasRole>
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+        <shiro:guest>
+            <li class="layui-nav-item"><a th:href="@{/login}">Log in first to view more job information!</a></li>
+            <li class="layui-nav-item"><a th:href="@{/register}">Register Now</a></li>
+        </shiro:guest>
+        <shiro:user>
+            <shiro:hasRole name="user">
+                <li class="layui-nav-item"><a th:href="@{/service/resume}">My resume</a></li>
+            </shiro:hasRole>
+            <shiro:hasRole name="hr">
+                <li class="layui-nav-item"><a th:href="@{/service/company/hr}">Company Management</a></li>
+            </shiro:hasRole>
+            <shiro:user>
+                <li class="layui-nav-item">
+                    <a th:href="@{/setting/message}">
+                        My private message
+                        <span th:if="${hasNewMessage}" class="layui-badge-dot"></span>
+                    </a>
+                </li>
+            </shiro:user>
+            <shiro:hasRole name="admin">
+                <li class="layui-nav-item"><a th:href="@{/admin/index}">Backstage entrance</a></li>
+            </shiro:hasRole>
+            <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                <a href="javascript:;">
+                    <img th:src="@{/pic/userIcon/{img}(img=${userInfo.img})}"
+                         class="layui-nav-img">
+                    <span shiro:principal property="username"></span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd th:class="${thispage=='information'? 'layui-this':''}"><a
+                            th:href="@{/setting/information}">Personal data</a></dd>
+                    <dd><a th:href="@{/logout}">Log out</a></dd>
+                </dl>
+            </li>
+        </shiro:user>
+    </ul>
+</div>
+
+<ul th:fragment="infoSide(thisFrame)" class=" layui-bg-cyan layui-nav layui-nav-tree" style="float: left;">
+    <li th:class="${thisFrame=='information'?'layui-nav-item layui-this':'layui-nav-item'}">
+        <a th:href="@{/setting/information}">Personal information</a>
+    </li>
+    <li th:class="${thisFrame=='password'?'layui-nav-item layui-this':'layui-nav-item'}">
+        <a th:href="@{/setting/password}">Login Password</a>
+    </li>
+</ul>
+
+<ul th:fragment="manageSide(thisFrame)" class=" layui-bg-cyan layui-nav layui-nav-tree" style="float: left;">
+    <li th:if="${hrInfo==null}" th:class="${thisFrame=='join'?'layui-nav-item layui-this':'layui-nav-item'}">
+        <a th:href="@{/service/company/join}">Affiliates</a>
+    </li>
+    <li th:unless="${hrInfo==null}" th:class="${thisFrame=='hr'?'layui-nav-item layui-this':'layui-nav-item'}">
+        <a th:href="@{/service/company/hr}">HR Information</a>
+    </li>
+    <shiro:hasRole name="manager">
+        <li th:class="${thisFrame=='job'?'layui-nav-item layui-this':'layui-nav-item'}">
+            <a th:href="@{/service/company/jobManage}">Position Management</a>
+        </li>
+        <!-- 隐藏员工管理菜单项 -->
+        <li th:classappend="${active}=='staff'?'layui-this':''" style="display:none;">
+            <a th:href="@{/staff/manage}"><i class="layui-icon layui-icon-user"></i><cite>员工管理</cite></a>
+        </li>
+        <li th:class="${thisFrame=='info'?'layui-nav-item layui-this':'layui-nav-item'}">
+            <a th:href="@{/service/company/info}">Company Profile</a>
+        </li>
+    </shiro:hasRole>
+</ul>
+
+<div th:fragment="footer">
+    <p style="background-color:#ffffff;color: #7e7e7e;font-size: 10px;text-align: center">
+        <br/>
+        <br/>
+         
+        <br/>
+        <br/>
+    </p>
+</div>
+</body>
+</html>

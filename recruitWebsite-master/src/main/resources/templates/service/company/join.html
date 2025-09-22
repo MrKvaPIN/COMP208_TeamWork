@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title>Join Application</title>
+    <style type="text/css">
+        .container{
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            border: #f8f8f8 30px solid;
+            padding: 0;
+        }
+        .content{
+            background-color: #ffffff;
+            float: right;
+            min-height: 75vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+
+    <div th:replace="front-common::header('')"></div>
+
+    <div class="layui-layout-body" style="margin-top: 50px;background-color: #f8f8f8;">
+        <div class="layui-container container">
+            <div th:replace="front-common::manageSide('join')"></div>
+            <div class="content">
+                <div class="layui-fluid">
+                    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+                        <legend>Join Application</legend>
+                    </fieldset>
+                    <div class="layui-collapse" lay-filter="test">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">The Company is not present on this website</h2>
+                            <div class="layui-colla-content layui-show">
+                                <p>Click here to apply<a id="join" style="font-weight: bold">[Company Occupancy]</a>, fill in the relevant information of the company to settle in!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="front-common::footer"></div>
+    </div>
+
+</div>
+<script th:inline="javascript">
+    layui.use(['form','laydate'], function() {
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var $ = layui.jquery;
+
+        laydate.render({
+            elem: '#registrationTime'
+        });
+
+        $("#join").click(function (){
+            layer.open({
+                type: 1,
+                area: ['800px', '560px'],
+                shadeClose: false,
+                title: 'Company Registration',
+                btn: ['Confirm', 'Cancel'],
+                content: $('#joinCompanyFrame'),
+                success: function (index, layero){
+                    $("#companyInfoForm")[0].reset();
+                    layui.form.render();
+                },
+                yes: function (index, layero){
+                    var formFile = new FormData(document.getElementById('companyInfoForm'));
+                    $.ajax({
+                        url : [[@{/company/join}]],
+                    type : 'post',
+                        dataType : 'json',
+                        data : formFile,
+                        cache: false,
+                        processData: false,
+                        contentType:false,
+                        success : function(n) {
+                        if (n.success) {
+                            location.reload();
+                        }else {
+                            layer.msg("Company association failed: "+n.msg);
+                        }
+                    },
+                    error: function(n) {
+                        layer.msg("Company association failed, "+n.responseJSON.msg);
+                    }
+                });
+                },
+                end: function (res) {
+                    $("#joinCompanyFrame").css("display",'none');
+                }
+            });
+
+        })
+
+        $("#img").change(function (){
+            if(this.files.length){
+                let file = this.files[0];
+                let reader = new FileReader();
+                reader.onload = function(){
+                    $("#showImg").attr("src",this.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    })
+    function onHiddenFile() {
+        var dd = $("#img").val().split("\\");
+        $("#showImgName").val(dd[dd.length - 1]);
+    }
+
+</script>
+</body>
+<div id="joinCompanyFrame" style="display:none;">
+    <form class="layui-form" lay-filter="companyInfoForm" id="companyInfoForm" style="padding-right:30px">
+        <div class="layui-form-item" style="display: flex;flex-direction: column;align-items: center;justify-content: flex-start;">
+            <img th:src="@{/pic/companyIcon/company.png}"
+                 id="showImg" class="layui-nav-img" style="width: 120px;height: 120px;margin-right: 0;margin-bottom: 5px;">
+            <button class="layui-btn" type='button' value='' onclick='javascript:$("#img").click();'>Upload Icon</button>
+            <input id="showImgName" type='text' readonly style="border: none;text-align: center"/>
+            <input name="imgFile" id="img" placeholder="Upload Icon" type="file"
+                   accept="image/jpeg, image/png" maxFileCount=1 style="display:none" onchange='onHiddenFile();'/>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Company Name</label>
+            <div class="layui-input-block">
+                <input name="name" type="text" lay-verify="required" placeholder="Please enter the company name" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Registration Time</label>
+            <div class="layui-input-block">
+                <input name="registrationTime" lay-verify="required" id="registrationTime" type="text" placeholder="Please enter the registration date" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Funding Stage</label>
+            <div class="layui-input-block">
+                <select name="listedStatus" lay-search lay-verify="required|number">
+                    <option th:each="listedStatus,stat:${application.listedStatusList}"
+                            th:text="${listedStatus.value}"
+                            th:value="${listedStatus.value}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Company Size</label>
+            <div class="layui-input-block">
+                <select name="size" lay-search lay-verify="required|number">
+                    <option th:each="size,stat:${application.sizeList}"
+                            th:text="${size.value}"
+                            th:value="${size.value}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Company Introduction</label>
+            <div class="layui-input-block">
+                <textarea name="introduction" lay-verify="required" placeholder="Please enter company introduction" autocomplete="off" class="layui-textarea" ></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+</html>
+
+{field: 'name', width:100, title: 'Company Name'}
+{field: 'type', width:100, title: 'Company Type'}
+{field: 'size', width:100, title: 'Company Size'}
+{field: 'address', width:150, title: 'Company Address'}
+{field: 'description', width:200, title: 'Description'}
+{field: 'status', width:80, title: 'Status'}
+{title: 'Actions', width:150, fixed: 'right', toolbar: '#bar'}
+<a class="layui-btn layui-btn-xs" lay-event="view">View</a>
+<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="cancel">Cancel</a>
+layer.confirm('Are you sure to cancel this application?', function(index){

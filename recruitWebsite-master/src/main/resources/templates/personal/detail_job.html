@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="front-common :: commonCss(~{::title}, ~{}, ~{}, ~{})"></th:block>
+    <title th:text="|Job - ${job.job}|"></title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* 🌟 Floating Background Elements */
+        body {
+            background: linear-gradient(135deg, #f0f4f8, #e2eaf3);
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: rgba(0, 137, 123, 0.2);
+            border-radius: 50%;
+            filter: blur(70px);
+            animation: float 10s infinite alternate;
+        }
+
+        body::before { top: 10%; left: 10%; }
+        body::after { bottom: 10%; right: 10%; }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-30px); }
+        }
+
+        /* 📌 Job Header */
+        .show {
+            padding: 40px;
+            background: linear-gradient(135deg, #00897B, #26A69A);
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+            color: white;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .show:hover {
+            transform: scale(1.02);
+        }
+
+        .job-info h1 {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .job-info .salary {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            animation: glow 1.5s infinite;
+            box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.7); }
+        }
+
+        /* 📌 Info Cards & Extra Sections */
+        .info-card, .extra-info, .job-section {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .info-card:hover, .extra-info:hover, .job-section:hover {
+            box-shadow: 0px 8px 20px rgba(0, 137, 123, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* 📌 Job Description & Location */
+        .job-section {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .job-section h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .job-section p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 📌 Move Extra Sections Below Job Location */
+        .extra-info-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .extra-info {
+            width: 48%;
+        }
+
+        .extra-info h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .extra-info p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 📱 Responsive Design */
+        @media screen and (max-width: 768px) {
+            .extra-info {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="layui-layout layui-layout-admin">
+    <div th:replace="front-common::header('job')"></div>
+
+    <div class="layui-layout-body" style="margin-top: 50px; background-color: #f8f8f8;">
+        <div class="show">
+            <div class="layui-container">
+                <div class="job-info">
+                    <h1 th:text="${job.job}"></h1>
+                    <p class="salary">💰 <span th:text="${job.salary}"></span></p>
+                    <p th:text="|${job.business} · ${job.experience} · ${job.education}|"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-container">
+            <div class="layui-row layui-col-space30">
+                <div class="layui-col-md10">
+                    <div class="job-section">
+                        <h3>📌 Job Description</h3>
+                        <p th:text="${job.description}"></p>
+                    </div>
+
+                    <div class="job-section">
+                        <h3>📍 Job Location</h3>
+                        <p th:text="${job.address}"></p>
+                    </div>
+
+                    <!-- Extra Information Section -->
+                    <div class="extra-info-container">
+                        <div class="extra-info">
+                            <h3>🏢 Company Overview</h3>
+                            <p><b>Industry:</b> Technology & AI</p>
+                            <p><b>Services:</b> Smart cities, healthcare, fintech</p>
+                            <p><b>Mission:</b> Innovate with AI-driven solutions.</p>
+                        </div>
+
+                        <div class="extra-info">
+                            <h3>🔗 Related Jobs</h3>
+                            <!-- 写死的示例：假设岗位 ID 分别为 'abc123', 'xyz789', 'def456', 'jkl987' -->
+                            <a th:href="@{/job/detail/{id}(id='0932a7d8c325494b81b5156acae2af36')}" >
+                                • Test Engineer
+                            </a><br/>
+                            <a th:href="@{/job/detail/{id}(id='2')}" >
+                                • Java Intern Development Engineer
+                            </a><br/>
+                            <a th:href="@{/job/detail/{id}(id='658e833c950f40fc90305acfa0392482')}" >
+                                • Algorithm Engineer
+                            </a><br/>
+                            <a th:href="@{/job/detail/{id}(id='eb4249c585a54a11bae5de1f40963ecf')}" >
+                                • Product Manager
+                            </a>
+                        </div>
+
+                        <div class="extra-info">
+                            <h3>⭐ Employee Reviews</h3>
+                            <p>"Great career growth opportunities!" - 4.6 ⭐</p>
+                            <p>"Supportive leadership & learning culture." - 4.3 ⭐</p>
+                        </div>
+
+                        <div class="extra-info">
+                            <h3>📰 Latest News</h3>
+                            <p><b>Mar 2024:</b> Launched AI-powered hiring system.</p>
+                            <p><b>Feb 2024:</b> Ranked among top 10 workplaces in tech.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-col-md2">
+                    <div class="info-card">
+                        <img th:src="@{/upload/companyIcon/{img}(img=${company.img})}">
+                        <p th:text="|${company.listedStatus} · ${company.size}|"></p>
+                        <hr>
+                        <a th:href="@{/company/detail/{id}(id=${company.id})}" class="layui-btn layui-btn-sm layui-btn-red">🏢 View Company</a>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>👤 HR Information</h3>
+                        <p><b>Name:</b> <span th:text="${hr.name}"></span></p>
+                        <p><b>Position:</b> <span th:text="${hr.position}"></span></p>
+                        <a th:href="@{/message/newChat/{id}(id=${hr.id})}" class="layui-btn layui-btn-sm layui-btn-green">💬 Contact HR</a>
+                        <!-- 用于保存当前 job 的 ID -->
+                        <input type="hidden" id="jobIdHidden" th:value="${job.id}">
+                        <!-- Apply Now 按钮，样式与 Contact HR 保持一致 -->
+                        <shiro:lacksRole name="hr">
+                            <button class="layui-btn layui-btn-sm layui-btn-green" onclick="applyJob()" style="margin-top: 10px; width: 100%;">📩 Apply Now</button>
+                        </shiro:lacksRole>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="front-common::footer"></div>
+    </div>
+</div>
+
+<!-- JavaScript 代码 -->
+<script>
+    function applyJob(callback) {
+        const jobId = $('#jobIdHidden').val(); // ✅ 获取隐藏的 jobId
+
+        $.ajax({
+            url: '/resume/getParsedResumeAndSave',
+            type: 'GET',
+            data: { jobId: jobId },  // ✅ 把 jobId 作为参数传给后端
+            success: function(response) {
+                if (response.status === "success") {
+                    layer.msg('Application submitted successfully ✅');
+                    callback && callback(response.resume_text);  // resume_text 作为回调参数
+                } else if (response.status === "duplicate") {
+                    layer.msg('You have already applied for this position ⚠️');
+                    callback && callback("duplicate resume");
+                } else {
+                    layer.msg('Resume not found, please upload first ❌');
+                    callback && callback("default resume");
+                }
+            },
+            error: function(xhr, status, error) {
+                layer.msg('Failed to retrieve resume. Please check your login status.');
+                console.error('Error:', error);
+                callback && callback("default resume");
+            }
+        });
+    }
+
+
+
+</script>
+
+</body>
+</html>

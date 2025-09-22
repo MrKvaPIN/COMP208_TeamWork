@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{::script},~{::style})">
+    <title>Applicant List</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style type="text/css">
+        .container{
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            border: #f8f8f8 30px solid;
+            padding: 0;
+        }
+        .content{
+            background-color: #ffffff;
+            float: right;
+            min-height: 75vh;
+            width: 100%;
+        }
+        /* Markdown样式 */
+
+        /* 新增聊天消息样式 */
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message-content {
+            max-width: 100%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            background-color: #f0f2f5;
+        }
+        /* 保持原有.markdown-content样式不变 */
+        .markdown-content pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .markdown-content code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 10px;
+            color: #666;
+            margin: 10px 0;
+        }
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .markdown-content th, .markdown-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .markdown-content th {
+            background-color: #f2f2f2;
+        }
+        /* 表格中的Markdown内容样式控制 */
+        .layui-table .markdown-content {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .layui-table .markdown-content p {
+            margin: 5px 0;
+        }
+        .layui-table .markdown-content * {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+
+    <div th:replace="front-common::header('information')"></div>
+
+    <div class="layui-layout-body" style="margin-top: 50px;background-color: #f8f8f8;">
+        <div class="layui-container container">
+            <div th:replace="front-common::manageSide('job')"></div>
+            <div class="content">
+                <div class="layui-fluid">
+                    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+                        <legend>Applicant List</legend>
+                    </fieldset>
+                    <div class="layui-card">
+                        <form class="layui-form layui-card-header" lay-filter="applicantInfoForm" id="applicantInfoForm" style="padding: 15px;height: auto">
+                            <div class="layui-form-item" style="margin-bottom: 0">
+                                <div class="layui-inline">
+                                    <input class="layui-input" id="search-username" autocomplete="off" placeholder="Applicant Username">
+                                </div>
+                                <div class="layui-inline" style="float: right;">
+                                    <button type="button" class="layui-btn" id="searchBtn">
+                                        <i class="layui-icon layui-icon-search"></i> Search
+                                    </button>
+                                    <button type="button" class="layui-btn layui-btn-normal" id="recommendBtn" style="margin-left: 10px;">
+                                        <i class="layui-icon layui-icon-star"></i> Screening the best applicants
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="layui-card-body">
+                            <div style="padding-bottom:10px;">
+                                <table class="layui-hide" id="applicantTable" lay-skin="line" lay-filter="applicantTable">
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="front-common::footer"></div>
+    </div>
+
+</div>
+<script>
+    // 设置 marked 的 breaks 选项为 true，使得 \n 被转换成 <br>
+    marked.setOptions({
+        breaks: true
+    });
+</script>
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="viewResume">View Resume</a >
+</script>
+<!-- 引入 marked 库（CDN 示例） -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script th:inline="javascript">
+    layui.use(['table','form'], function() {
+        var form = layui.form;
+        var table = layui.table;
+        var $ = layui.jquery;
+        
+        var jobId = [[${jobId}]];
+        var jobName = [[${jobName}]];
+        
+        // 更新页面标题，显示岗位名称
+        if(jobName) {
+            $('legend').text('Post "' + jobName + '" list of applicants');
+        }
+
+        var tableIns = table.render({
+            elem: '#applicantTable'
+            , url: '/applicant/getByJobId/' + jobId
+            , where: {
+                "username": $('#search-username').val()
+            }
+            , defaultToolbar: []
+            , page: true
+            , limits: [5, 10, 20]
+            , limit: 10
+            , width: 880
+            , cols: [
+                [
+                    {field: 'id', title: 'ID', hide: true}
+                    , {field: 'applyUsername', width:150, title: 'Applicant Username'}
+                    , {field: 'applyResume', width:600, title: 'Resume Content', templet: function(d){
+                        var content = d.applyResume || '';
+                        var parsedContent = marked.parse(content, {breaks: true});
+                        if(content.length > 100) {
+                            return '<div class="message-content">' + marked.parse(content.substring(0, 100), {breaks: true}) + '...</div>';
+                        }
+                        return '<div class="message-content">' + parsedContent + '</div>';
+                    }}
+                    , {title: 'operate', width:130, fixed: 'right',  toolbar: '#bar'}
+                ]
+            ]
+        });
+
+        $("#searchBtn").click(function (){
+            tableIns.reload( {
+                where: {
+                    "username": $('#search-username').val()
+                }
+                ,page: {
+                    curr: 1
+                }
+            });
+        });
+
+        table.on('tool(applicantTable)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'viewResume'){
+                layer.open({
+                    type: 1,
+                    area: ['800px', '600px'],
+                    title: 'Applicant\'s resume details',
+                    content: `
+                        <div style="padding: 20px; height: 500px; overflow-y: auto;" class="message-content">
+                            ${marked.parse(data.applyResume || '', {breaks: true})}
+                        </div>
+                    `,
+                    shadeClose: true
+                });
+            }
+        });
+    });
+
+    // 推荐按钮点击事件
+    $("#recommendBtn").click(function () {
+        var allData = layui.table.cache['applicantTable'];
+        if (!allData || allData.length === 0) {
+            layer.msg("暂无申请人数据");
+            return;
+        }
+        
+        // 显示加载提示
+        var loadingIndex = layer.msg('AI is searching, please wait...', {
+            icon: 16,
+            shade: 0.01,
+            time: 0
+        });
+
+        var jobDescription = [[${jobDescription}]];  // ✅ 需要后台 controller 注入这个变量
+
+        // 拼接所有简历内容（格式：<resume>xxx）
+        var resumeText = "";
+        allData.forEach(item => {
+            resumeText += "<resume>" + item.applyResume;
+        });
+
+        // 调用 Flask AI 服务（确保 Flask 在 http://localhost:5004/process 运行）
+        $.ajax({
+            url: "/process3",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                position: jobDescription,
+                resumes: resumeText
+            }),
+            success: function (res) {
+                // 关闭加载提示
+                layer.close(loadingIndex);
+                
+                var htmlContent = marked.parse(res);
+
+                layer.open({
+                    type: 1,
+                    area: ['800px', '600px'],
+                    title: 'AI Recommended results',
+                    content: '<div style="padding: 20px; line-height:1.8;">' + htmlContent + '</div>',
+                    shadeClose: true
+                });
+            },
+            error: function (xhr) {
+                // 关闭加载提示
+                layer.close(loadingIndex);
+                console.error(xhr);
+                layer.msg("AI recommendation failed, please try again later");
+            }
+        });
+    });
+</script>
+</body>
+</html>

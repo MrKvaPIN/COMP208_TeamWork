@@ -1,0 +1,14 @@
+# 忽略编译生成的 class 文件
+*.class
+
+# 忽略 maven/gradle 编译目录
+/target/
+/bin/
+
+# 忽略 IntelliJ IDEA 配置文件
+.idea/
+*.iml
+
+# 忽略日志文件
+*.log
+.DS_Store

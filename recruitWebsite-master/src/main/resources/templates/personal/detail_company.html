@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="front-common :: commonCss(~{::title},~{},~{},~{::style})">
+    <title th:text="|公司-${company.name}|"></title>
+    <style type="text/css">
+        /* 1. 页面整体基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* 让宽高计算更符合直觉 */
+        }
+        body {
+            background-color: #f8f8f8;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* 2. 顶部展示区域(show) */
+        .show {
+            padding: 20px;
+            /* 使用线性渐变，让顶部有层次感 */
+            background: linear-gradient(135deg, #009688 0%, #00b39e 100%);
+            color: #ffffff;
+        }
+        .show-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* 给内部内容加个轻微背景、圆角和内边距，增加层次 */
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        /* 公司左侧信息 */
+        .company-info {
+            display: flex;
+            align-items: center;
+        }
+        .company-info img {
+            border-radius: 8px;
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+            border: 2px solid #ffffff22; /* 半透明边框，视觉更柔和 */
+        }
+
+        /* 公司名称与基本信息 */
+        .company-info-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .company-info-text .company-name {
+            font-size: 35px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .company-info-text .company-meta {
+            font-size: 14px;
+            opacity: 0.9; /* 让文字稍微淡一点 */
+        }
+
+        /* 右侧岗位和HR统计信息 */
+        .company-stat {
+            display: flex;
+            flex-direction: row;
+            gap: 20px; /* 两个卡片之间留出空隙 */
+        }
+        .company-stat-item {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .company-stat-item b {
+            font-size: 35px;
+            color: #fff;
+        }
+        .company-stat-item span {
+            display: block;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #f0f0f0;
+        }
+
+        /* 3. 主体区域(公司简介等) */
+        .main-container {
+            min-height: 50vh;
+            margin-top: 10px;
+        }
+        .company-intro {
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .company-intro legend {
+            font-weight: bold;
+            font-size: 22px;
+        }
+        .company-intro .layui-field-box {
+            font-weight: 400;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            color: #333;
+            white-space: pre-wrap; /* 保留原有换行格式 */
+            background-color: #fff; /* 背景色与外层保持一致 */
+            border: none;          /* 去掉默认边框 */
+            padding: 0;            /* 去掉默认内边距 */
+            margin-top: 10px;      /* 让文字与 legend 拉开距离 */
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layui-layout layui-layout-admin">
+    <!-- 公共头部 -->
+    <div th:replace="front-common::header('company')"></div>
+
+    <!-- 页面主体 -->
+    <div class="layui-layout-body" style="margin-top: 50px;">
+        <!-- 顶部展示区域 -->
+        <div class="show">
+            <div class="layui-container">
+                <div class="show-row">
+                    <!-- 左侧：公司图片 + 文本信息 -->
+                    <div class="company-info">
+                        <img th:src="@{/upload/companyIcon/{img}(img=${company.img})}">
+                        <div class="company-info-text">
+                            <span class="company-name" th:text="${company.name}"></span>
+                            <span class="company-meta" th:text="|${company.registrationTime} · ${company.size} · ${company.listedStatus}|"></span>
+                        </div>
+                    </div>
+                    <!-- 右侧：岗位数、HR数 -->
+                    <div class="company-stat">
+                        <div class="company-stat-item">
+                            <b th:text="${jobCount}">0</b>
+                            <span> positions</span>
+                        </div>
+                        <div class="company-stat-item">
+                            <b th:text="${hrCount}">0</b>
+                            <span> HRs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公司简介 -->
+        <div class="layui-container main-container">
+            <fieldset class="layui-elem-field company-intro">
+                <legend>Company Profile</legend>
+                <pre class="layui-field-box" th:text="${company.introduction}"></pre>
+            </fieldset>
+        </div>
+
+        <!-- 公共底部 -->
+        <div th:replace="front-common::footer"></div>
+    </div>
+</div>
+
+</body>
+</html>
